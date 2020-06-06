@@ -39,16 +39,10 @@ export function unlockFirstQuest(storyId, callback) {
   }
 }
 
-export function loadStory(storyXML, callback, startLocation) {
-  if (g_loadedStories[storyXML]) {
-    return;
-  }
-  loadStoryXML([storyXML], true, function() {
-    if (startLocation) {
-      LocationManager.changeStartLocation(startLocation);
-    }
-    unlockFirstQuest(storyXML, LocationManager.verifyGotoStart(callback));
-  });
+export async function loadStoryById(storyXML, callback, startLocation) {
+  await loadStoryXML(storyXML);
+  // startLocation && LocationManager.changeStartLocation(startLocation);
+  // unlockFirstQuest(storyXML, LocationManager.verifyGotoStart(callback));
 }
 
 function processStory(story) {
@@ -60,133 +54,143 @@ function processStory(story) {
   QuestManager.loadQuests(story);
 }
 
-export function loadStoryXML(storyXMLs, willSave, callback) {
-  callback = callback || Constants.nullFunction;
-  g_loadingOverlay.visible = true;
-  var downloaded = {};
-  var downloadRequestSent = {};
-  var willBeDownloaded = storyXMLs.slice();
-  var storyDependencies = {};
-  // download all needed XML files
-  function download(i, storyXMLs, callback) {
-    if (i >= storyXMLs.length) {
-      return;
-    }
-    // check whether this story has been downloaded or will be downloaded
-    var curId = storyXMLs[i];
-    if (g_loadedStories[curId] || downloadRequestSent[curId]) {
-      download(i + 1, storyXMLs, callback);
-      // } else if (loadingStories.indexOf(curId) !== -1) {
-      //     throw new Error("Circular dependencies");
-    } else {
-      // download the story
-      downloadRequestSent[curId] = true;
-      const makeAjax = isTest => {
-        const xhr = new XMLHttpRequest();
-        xhr.open(
-          'GET',
-          `${isTest ? Constants.storyXMLPathTest : Constants.storyXMLPathLive}${curId}.story.xml`
-        );
-        xhr.addEventListener('load', () => {
-          var xml = xhr.responseXML;
-          var story = xml.children[0];
-          downloaded[curId] = story;
-          // check and load dependencies
-          var dependencies = story.getAttribute('dependencies');
-          var notDownloading = [];
-          if (dependencies) {
-            storyDependencies[curId] = dependencies.split(' ');
-            notDownloading = storyDependencies[curId].filter(function(id) {
-              return !g_loadedStories[id] && willBeDownloaded.indexOf(id) === -1;
-            });
-          } else {
-            storyDependencies[curId] = [];
-          }
-          willBeDownloaded = willBeDownloaded.concat(notDownloading);
-          if (notDownloading.length > 0) {
-            download(0, notDownloading, callback);
-          } else {
-            // figure out whether all files have been downloaded
-            var allRequestSent = willBeDownloaded.reduce(function(prev, cur) {
-              return prev && downloadRequestSent[cur];
-            }, true);
-            if (allRequestSent && Object.keys(downloaded).length == willBeDownloaded.length) {
-              callback();
-            }
-          }
-        });
-        xhr.addEventListener(
-          'error',
-          isTest
-            ? () => {
-                console.log('Trying on live...');
-                makeAjax(false);
-              }
-            : () => {
-                g_loadingOverlay.visible = false;
-                console.error('Cannot find story ' + curId);
-              }
-        );
-        xhr.send();
-      };
-      makeAjax(!isStudent());
-      download(i + 1, storyXMLs, callback);
-    }
-  }
-  download(0, storyXMLs, function() {
-    // figure out load order of dependencies
-    var sorted = [];
-    var visited = {};
-    var visiting = {};
-    function dfs(storyId) {
-      if (visiting[storyId]) {
-        throw new Error('Circular dependencies');
-      } else if (!(g_loadedStories[storyId] || visited[storyId])) {
-        visiting[storyId] = true;
-        storyDependencies[storyId].forEach(dfs);
-        visited[storyId] = true;
-        visiting[storyId] = false;
-        sorted.push(storyId);
-      }
-    }
-    var index = 0;
-    while (index < willBeDownloaded.length) {
-      dfs(willBeDownloaded[index]);
-      while (willBeDownloaded[index] && visited[willBeDownloaded[index]]) {
-        index++;
-      }
-    }
-    // load quests and assets
-    var assetsToLoadTable = {};
-    PIXI.loader.reset();
-    sorted.forEach(function(storyId) {
-      processStory(downloaded[storyId]);
-      markAssetsToLoad(downloaded[storyId], assetsToLoadTable);
-      SoundManager.markSoundsToLoad(downloaded[storyId]);
+export async function loadStoryXML(storyXML) {
+  const SERVER_URL = Constants.storyXMLPathTest + storyXML + '.story.xml';
+  try {
+    const response = await fetch(SERVER_URL, {
+      method: 'GET'
     });
-    preloadAssets(assetsToLoadTable, function() {
-      SoundManager.preloadSounds();
-      if (willSave) {
-        SaveManager.saveLoadStories(sorted);
-      }
-      SaveManager.updateGameMap();
-      g_loadingOverlay.visible = false;
-      callback();
-    });
-  });
-}
-export function closeStory(storyId, callback) {
-  if (!g_loadedStories[storyId]) {
-    return;
+    g_loadingOverlay.visible = true;
+    console.log(response);
+    const story = xml.children[0];
+    console.log('HERE', xml);
+  } finally {
   }
-  callback = callback || Constants.nullFunction;
-  BlackOverlay.blackScreen(function() {
-    g_loadedStories[storyId] = null;
-    QuestManager.unloadQuests(storyId);
-    SaveManager.removeActions({ storyId: storyId }, true);
-    LocationManager.verifyCurCamLocation();
-    LocationManager.goBackToCurCamLocation(callback);
-  });
+  //   callback = callback || Constants.nullFunction;
+  //   var downloaded = {};
+  //   var downloadRequestSent = {};
+  //   var willBeDownloaded = storyXMLs.slice();
+  //   var storyDependencies = {};
+  //   // download all needed XML files
+  //   function download(i, storyXMLs, callback) {
+  //     if (i >= storyXMLs.length) {
+  //       return;
+  //     }
+  //     // check whether this story has been downloaded or will be downloaded
+  //     var curId = storyXMLs[i];
+  //     if (g_loadedStories[curId] || downloadRequestSent[curId]) {
+  //       download(i + 1, storyXMLs, callback);
+  //       // } else if (loadingStories.indexOf(curId) !== -1) {
+  //       //     throw new Error("Circular dependencies");
+  //     } else {
+  //       // download the story
+  //       downloadRequestSent[curId] = true;
+  //       const makeAjax = isTest => {
+  //         const xhr = new XMLHttpRequest();
+  //         xhr.open(
+  //           'GET',
+  //           `${isTest ? Constants.storyXMLPathTest : Constants.storyXMLPathLive}${curId}.story.xml`
+  //         );
+  //         xhr.addEventListener('load', () => {
+  //           var xml = xhr.responseXML;
+  //           var story = xml.children[0];
+  //           downloaded[curId] = story;
+  //           // check and load dependencies
+  //           var dependencies = story.getAttribute('dependencies');
+  //           var notDownloading = [];
+  //           if (dependencies) {
+  //             storyDependencies[curId] = dependencies.split(' ');
+  //             notDownloading = storyDependencies[curId].filter(function(id) {
+  //               return !g_loadedStories[id] && willBeDownloaded.indexOf(id) === -1;
+  //             });
+  //           } else {
+  //             storyDependencies[curId] = [];
+  //           }
+  //           willBeDownloaded = willBeDownloaded.concat(notDownloading);
+  //           if (notDownloading.length > 0) {
+  //             download(0, notDownloading, callback);
+  //           } else {
+  //             // figure out whether all files have been downloaded
+  //             var allRequestSent = willBeDownloaded.reduce(function(prev, cur) {
+  //               return prev && downloadRequestSent[cur];
+  //             }, true);
+  //             if (allRequestSent && Object.keys(downloaded).length == willBeDownloaded.length) {
+  //               callback();
+  //             }
+  //           }
+  //         });
+  //         xhr.addEventListener(
+  //           'error',
+  //           isTest
+  //             ? () => {
+  //                 console.log('Trying on live...');
+  //                 makeAjax(false);
+  //               }
+  //             : () => {
+  //                 g_loadingOverlay.visible = false;
+  //                 console.error('Cannot find story ' + curId);
+  //               }
+  //         );
+  //         xhr.send();
+  //       };
+  //       makeAjax(!isStudent());
+  //       download(i + 1, storyXMLs, callback);
+  //     }
+  //   }
+  //   download(0, storyXMLs, function() {
+  //     // figure out load order of dependencies
+  //     var sorted = [];
+  //     var visited = {};
+  //     var visiting = {};
+  //     function dfs(storyId) {
+  //       if (visiting[storyId]) {
+  //         throw new Error('Circular dependencies');
+  //       } else if (!(g_loadedStories[storyId] || visited[storyId])) {
+  //         visiting[storyId] = true;
+  //         storyDependencies[storyId].forEach(dfs);
+  //         visited[storyId] = true;
+  //         visiting[storyId] = false;
+  //         sorted.push(storyId);
+  //       }
+  //     }
+  //     var index = 0;
+  //     while (index < willBeDownloaded.length) {
+  //       dfs(willBeDownloaded[index]);
+  //       while (willBeDownloaded[index] && visited[willBeDownloaded[index]]) {
+  //         index++;
+  //       }
+  //     }
+  //     // load quests and assets
+  //     var assetsToLoadTable = {};
+  //     PIXI.loader.reset();
+  //     sorted.forEach(function(storyId) {
+  //       processStory(downloaded[storyId]);
+  //       markAssetsToLoad(downloaded[storyId], assetsToLoadTable);
+  //       SoundManager.markSoundsToLoad(downloaded[storyId]);
+  //     });
+  //     preloadAssets(assetsToLoadTable, function() {
+  //       SoundManager.preloadSounds();
+  //       if (willSave) {
+  //         SaveManager.saveLoadStories(sorted);
+  //       }
+  //       SaveManager.updateGameMap();
+  //       g_loadingOverlay.visible = false;
+  //       callback();
+  //     });
+  //   });
+  // }
+  // export function closeStory(storyId, callback) {
+  //   if (!g_loadedStories[storyId]) {
+  //     return;
+  //   }
+  //   callback = callback || Constants.nullFunction;
+  //   BlackOverlay.blackScreen(function() {
+  //     g_loadedStories[storyId] = null;
+  //     QuestManager.unloadQuests(storyId);
+  //     SaveManager.removeActions({ storyId: storyId }, true);
+  //     LocationManager.verifyCurCamLocation();
+  //     LocationManager.goBackToCurCamLocation(callback);
+  //   });
 }
 
 function preloadAssets(assetsToLoadTable, callback) {
