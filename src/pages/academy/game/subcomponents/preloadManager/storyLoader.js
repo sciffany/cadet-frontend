@@ -3,7 +3,7 @@ import { isStudent } from '../backend/user.js';
 import { createLoadingScreen, createBlackOverlay, createText } from '../effects/effects.js';
 import { defaultText } from '../constants/styles.js';
 import Constants from '../constants/constants';
-import { loadQuests } from '../questManager/questManager.js';
+import QuestManager from '../questManager/questManager.js';
 
 var LocationManager = require('../locationManager/locationManager.js');
 var SaveManager = require('../saveManager/saveManager.js');
@@ -12,7 +12,6 @@ var SoundManager = require('../soundManager/soundManager.js');
 
 export async function loadStoryById(storyId) {
   const stories = await loadStoryXmls(storyId);
-  stories.forEach(loadQuests);
   SaveManager.updateGameMap();
   // startLocation && LocationManager.changeStartLocation(startLocation);
   // unlockFirstQuest(storyXML, LocationManager.verifyGotoStart(callback));

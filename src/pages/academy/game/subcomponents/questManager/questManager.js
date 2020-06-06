@@ -1,4 +1,5 @@
 import Constants from '../constants/constants';
+import Tagnames from '../constants/tagname';
 
 var LocationManager = require('../locationManager/locationManager.js');
 var DialogManager = require('../dialogManager/dialogManager.js');
@@ -8,18 +9,23 @@ var Utils = require('../utils/utils.js');
 var ExternalManager = require('../externalManager/externalManager.js');
 var GameState = require('../backend/gameState');
 
-var loadedQuests = {};
-var activeQuests = {};
+class QuestManager {
+  _instance = new QuestManager();
+  _loadedQuests = {};
+  activeQuests = {};
 
-export function loadQuests(story) {
-  var quests = {};
-  loadedQuests[story.id] = quests;
-  var [child] = story.children;
-  while (child) {
-    if (child.tagName == 'QUEST') {
-      quests[child.id] = child;
-    }
-    child = child.nextElementSibling;
+  loadQuests(story) {
+    const quests = {};
+    const [quest] = story.children;
+    const quests = flatten(quest);
+    quests
+      .filter(quest => quest.tagName == Tagnames.QUEST)
+      .forEach(quest => (quests[quest.id] = quest));
+    this._loadedQuests[story.id] = quests;
+  }
+
+  getInstance() {
+    return this._instance;
   }
 }
 
