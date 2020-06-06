@@ -3,7 +3,6 @@ import Constants from '../constants/constants';
 var LocationManager = require('../locationManager/locationManager.js');
 var DialogManager = require('../dialogManager/dialogManager.js');
 var MapManager = require('../mapManager/mapManager.js');
-var StoryManager = require('../preloadManager/storyManager.js');
 var SaveManager = require('../saveManager/saveManager.js');
 var Utils = require('../utils/utils.js');
 var ExternalManager = require('../externalManager/externalManager.js');
@@ -13,14 +12,10 @@ var loadedQuests = {};
 var activeQuests = {};
 
 export function loadQuests(story) {
-  if (story.tagName !== 'STORY') {
-    return;
-  }
   var quests = {};
   loadedQuests[story.id] = quests;
-  var child = story.children[0];
+  var [child] = story.children;
   while (child) {
-    // check whether child is a <QUEST>
     if (child.tagName == 'QUEST') {
       quests[child.id] = child;
     }
@@ -151,7 +146,7 @@ export function completeQuest(storyId, questId, callback) {
   }
   if (!activeQuests[storyId][questId].nextElementSibling) {
     // last quest, close this story
-    StoryManager.closeStory(storyId, callback);
+    // StoryManager.closeStory(storyId, callback);
     return;
   }
   var quest = activeQuests[storyId][questId];
@@ -169,7 +164,7 @@ export function completeQuest(storyId, questId, callback) {
 
 export function unlockLastQuest(storyId, callback) {
   callback = callback || Constants.nullFunction;
-  var story = StoryManager.getLoadedStory(storyId);
+  // var story = StoryManager.getLoadedStory(storyId);
   if (!story) {
     return;
   }

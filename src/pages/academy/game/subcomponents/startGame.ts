@@ -1,15 +1,14 @@
 import { IAssessmentOverview } from 'src/components/assessment/assessmentShape';
 import { GameState, Story } from '../../../../reducers/states';
-import { LINKS } from '../../../../utils/constants';
 import { fetchGameData } from './backend/gameState';
 import Constants from './constants/constants';
-import { loadStoryById } from './preloadManager/storyManager';
-import { initStage } from './storyXmlPlayer';
 import hookHandlers from './utils/hookHandlers';
+import { loadStoryById } from './preloadManager/storyLoader';
+import StoryXmlPlayer from './preloadManager/storyXmlPlayer.js';
+import { createLoadingScreen } from './effects/effects';
 
 const config = {
   hookHandlers,
-  wristDeviceFunc: () => window.open(LINKS.LUMINUS),
   playerImageCanvas: document.createElement('CANVAS'),
   changeLocationHook: (newLocation: string) =>
     localStorage.setItem(Constants.LOCATION_KEY, newLocation)
@@ -23,9 +22,11 @@ async function startGame(
   gameState: GameState,
   missions: IAssessmentOverview[] | undefined
 ) {
+  const setLoading = createLoadingScreen();
   const storyId: string = await fetchGameData(userStory, gameState, missions);
-  initStage(div, canvas, { ...config, playerName: username });
+  new StoryXmlPlayer(div, canvas, { ...config, playerName: username });
   loadStoryById(storyId);
+  setLoading(false);
 }
 
 export default startGame;

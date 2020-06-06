@@ -3,7 +3,7 @@ import Constants from '../constants/constants';
 
 var LocationManager = require('../locationManager/locationManager.js');
 var QuestManager = require('../questManager/questManager.js');
-var StoryManager = require('../preloadManager/storyManager.js');
+var StoryManager = require('../preloadManager/storyLoader.js');
 var MapManager = require('../mapManager/mapManager.js');
 var QuestManager = require('../questManager/questManager.js');
 var ObjectManager = require('../objectManager/objectManager.js');
@@ -18,7 +18,7 @@ export function init() {
     actionSequence = saveData.actionSequence;
     var storyXMLs = [];
     for (var i = 0; i < actionSequence.length; i++) {
-      if (actionSequence[i].type == 'loadStory') {
+      if (actionSequence[i].type === 'loadStory') {
         storyXMLs.push(actionSequence[i].storyId);
       }
     }
@@ -31,12 +31,12 @@ export function init() {
       LocationManager.changeStartLocation(saveData.startLocation);
       if (hasPending()) {
         var secondLast = actionSequence[actionSequence.length - 2];
-        if (secondLast.type == 'loadStory') {
+        if (secondLast.type === 'loadStory') {
           StoryManager.unlockFirstQuest(
             secondLast.storyId,
             LocationManager.verifyGotoStart(callback)
           );
-        } else if (secondLast.type == 'unlockQuest') {
+        } else if (secondLast.type === 'unlockQuest') {
           QuestManager.playOpening(
             secondLast.storyId,
             secondLast.questId,
@@ -150,14 +150,14 @@ export function updateGameMap() {
         console.error('story ' + action.storyId + ' is not loaded yet');
         return;
       }
-      if (story.children[0] && story.children[0].tagName == 'MAP') {
+      if (story.children[0] && story.children[0].tagName === 'MAP') {
         MapManager.processMap(story.children[0]);
       }
-    } else if (action.type == 'unlockQuest') {
+    } else if (action.type === 'unlockQuest') {
       QuestManager.activateQuest(action.storyId, action.questId);
-    } else if (action.type == 'seeDisplayOnceSequence') {
+    } else if (action.type === 'seeDisplayOnceSequence') {
       MapManager.getGameLocation(action.locationName).sequence = null;
-    } else if (action.type == 'clickTempObject') {
+    } else if (action.type === 'clickTempObject') {
       ObjectManager.removeTempObject(action.storyId, action.objectId);
     }
   }
@@ -174,7 +174,7 @@ export function saveSeeDisplayOnceSeq(node, locName) {
     storyId: storyAncestor.id
   };
   var quest = node.parentNode.parentNode.parentNode;
-  if (quest.tagName == 'QUEST') {
+  if (quest.tagName === 'QUEST') {
     action.questId = quest.id;
   }
   actionSequence.push(action);
@@ -186,7 +186,7 @@ export function saveClickTempObject(node, storyId) {
     return;
   }
   var action = { type: 'clickTempObject', storyId: storyId, objectId: node.id };
-  if (node.parentElement.parentElement.parentElement.tagName == 'QUEST') {
+  if (node.parentElement.parentElement.parentElement.tagName === 'QUEST') {
     action.questId = node.parentElement.parentElement.parentElement.id;
   }
   actionSequence.push(action);
