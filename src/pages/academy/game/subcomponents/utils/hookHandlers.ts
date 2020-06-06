@@ -1,7 +1,7 @@
 import { LINKS } from '../../../../../utils/constants';
 import { history } from '../../../../../utils/history';
 import { saveCollectible, saveQuest } from '../backend/gameState';
-import { playSound } from '../soundManager/soundManager';
+import { playSound } from '../preloadManager/soundLoader';
 
 const hookHandlers = {
   startMission: () => history.push('/academy/missions'),

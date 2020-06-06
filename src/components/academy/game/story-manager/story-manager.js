@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js';
 import { isStudent } from '../backend/user.js';
 
 var Constants = require('../constants/constants.js');
@@ -19,12 +19,7 @@ export function init() {
   blackOverlay.beginFill(0, 1);
   blackOverlay.drawRect(0, 0, Constants.screenWidth, Constants.screenHeight);
   blackOverlay.endFill();
-  blackOverlay.hitArea = new PIXI.Rectangle(
-    0,
-    0,
-    Constants.screenWidth,
-    Constants.screenHeight
-  );
+  blackOverlay.hitArea = new PIXI.Rectangle(0, 0, Constants.screenWidth, Constants.screenHeight);
   blackOverlay.interactive = true;
   blackOverlay.alpha = 0.8;
   loadingOverlay.addChild(blackOverlay);
@@ -34,15 +29,12 @@ export function init() {
     fill: 'white'
   });
   loadingText.anchor.set(0.5, 0.5);
-  loadingText.position.set(
-    Constants.screenWidth / 2,
-    Constants.screenHeight / 2
-  );
+  loadingText.position.set(Constants.screenWidth / 2, Constants.screenHeight / 2);
   loadingOverlay.addChild(loadingText);
   loadingOverlay.visible = false;
 
   return loadingOverlay;
-};
+}
 
 export function getLoadedStory(storyId) {
   return loadedStories[storyId];
@@ -58,10 +50,7 @@ export function unlockFirstQuest(storyId, callback) {
   var child = story.children[0];
   if (child && child.tagName == 'QUEST') {
     QuestManager.unlockQuest(storyId, child.id, callback);
-  } else if (
-    child.nextElementSibling &&
-    child.nextElementSibling.tagName == 'QUEST'
-  ) {
+  } else if (child.nextElementSibling && child.nextElementSibling.tagName == 'QUEST') {
     QuestManager.unlockQuest(storyId, child.nextElementSibling.id, callback);
   } else {
     callback();
@@ -124,7 +113,10 @@ export function loadStoryXML(storyXMLs, willSave, callback) {
       downloadRequestSent[curId] = true;
       const makeAjax = isTest => {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `${isTest ? Constants.storyXMLPathTest : Constants.storyXMLPathLive}${curId}.story.xml`);
+        xhr.open(
+          'GET',
+          `${isTest ? Constants.storyXMLPathTest : Constants.storyXMLPathLive}${curId}.story.xml`
+        );
         xhr.addEventListener('load', () => {
           var xml = xhr.responseXML;
           var story = xml.children[0];
@@ -148,24 +140,25 @@ export function loadStoryXML(storyXMLs, willSave, callback) {
             var allRequestSent = willBeDownloaded.reduce(function(prev, cur) {
               return prev && downloadRequestSent[cur];
             }, true);
-            if (
-              allRequestSent &&
-              Object.keys(downloaded).length == willBeDownloaded.length
-            ) {
+            if (allRequestSent && Object.keys(downloaded).length == willBeDownloaded.length) {
               callback();
             }
           }
         });
-        xhr.addEventListener('error', isTest ? () => {
-          console.log('Trying on live...');
-          makeAjax(false);
-        }
-          : () => {
-          loadingOverlay.visible = false;
-          console.error('Cannot find story ' + curId);
-        });
+        xhr.addEventListener(
+          'error',
+          isTest
+            ? () => {
+                console.log('Trying on live...');
+                makeAjax(false);
+              }
+            : () => {
+                loadingOverlay.visible = false;
+                console.error('Cannot find story ' + curId);
+              }
+        );
         xhr.send();
-      }
+      };
       makeAjax(!isStudent());
       download(i + 1, storyXMLs, callback);
     }

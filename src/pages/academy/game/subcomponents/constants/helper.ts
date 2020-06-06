@@ -1,7 +1,8 @@
-function flatten(child: any) {
-  var siblings = [child];
+export function flatten(child: any): Array<any> {
+  const siblings = [];
   while (child) {
+    siblings.push(child);
     child = child.nextElementSibling;
   }
-  siblings.push(child);
+  return siblings;
 }

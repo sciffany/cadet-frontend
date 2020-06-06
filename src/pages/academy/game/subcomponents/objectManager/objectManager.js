@@ -4,7 +4,7 @@ import Constants from '../constants/constants';
 var LocationManager = require('../locationManager/locationManager.js');
 var MapManager = require('../mapManager/mapManager.js');
 var DialogManager = require('../dialogManager/dialogManager.js');
-var QuestManager = require('../questManager/questManager.js');
+var QuestManager = require('../questManager/questManager.ts');
 var SaveManager = require('../saveManager/saveManager.js');
 var ExternalManager = require('../externalManager/externalManager.js');
 var MapOverlay = require('../mapOverlay/mapOverlay.js');

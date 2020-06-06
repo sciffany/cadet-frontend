@@ -1,9 +1,8 @@
 import { IAssessmentOverview } from 'src/components/assessment/assessmentShape';
 import { GameState, Story } from '../../../../reducers/states';
-import { fetchGameData } from './backend/gameState';
 import Constants from './constants/constants';
 import hookHandlers from './utils/hookHandlers';
-import { loadStoryById } from './preloadManager/storyLoader';
+import GameEngine from './preloadManager/GameEngine';
 import StoryXmlPlayer from './preloadManager/storyXmlPlayer.js';
 import { createLoadingScreen } from './effects/effects';
 
@@ -23,9 +22,9 @@ async function startGame(
   missions: IAssessmentOverview[] | undefined
 ) {
   const setLoading = createLoadingScreen();
-  const storyId: string = await fetchGameData(userStory, gameState, missions);
+  const storyId = 'mission-1';
   new StoryXmlPlayer(div, canvas, { ...config, playerName: username });
-  loadStoryById(storyId);
+  GameEngine.getInstance().playStory(storyId);
   setLoading(false);
 }
 

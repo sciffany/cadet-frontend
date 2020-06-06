@@ -4,7 +4,7 @@ import Constants from '../constants/constants';
 import LocationManager from '../locationManager/locationManager';
 import ObjectManager from '../objectManager/objectManager';
 import DialogManager from '../dialogManager/dialogManager';
-import QuestManager from '../questManager/questManager';
+import QuestManager from '../questManager/questManager.ts';
 import SaveManager from '../saveManager/saveManager';
 import ExternalManager from '../externalManager/externalManager';
 import BlackOverlay from '../blackOverlay/blackOverlay';
@@ -46,7 +46,7 @@ class StoryXmlPlayer {
     };
     animate();
 
-    SaveManager.init();
+    // SaveManager.init();
   }
 
   loadingScreen(div, canvas) {
@@ -67,12 +67,3 @@ class StoryXmlPlayer {
   }
 }
 export default StoryXmlPlayer;
-
-export { getExternalOverlay } from '../externalManager/externalManager.js';
-export {
-  changeStartLocation,
-  gotoStartLocation,
-  gotoLocation
-} from '../locationManager/locationManager.js';
-export { unlockQuest, completeQuest, unlockLastQuest } from '../questManager/questManager.js';
-export { sendNotification, changeWristDeviceFunction } from '../mapOverlay/mapOverlay.js';

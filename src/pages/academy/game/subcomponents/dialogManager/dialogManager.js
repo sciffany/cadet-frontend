@@ -7,7 +7,7 @@ var ObjectManager = require('../objectManager/objectManager.js');
 var FilterEffects = require('../effects/filterEffects.js');
 var Avatar = require('./avatar/avatar.js');
 var Utils = require('../utils/utils.js');
-var SoundManager = require('../soundManager/soundManager.js');
+var SoundManager = require('../preloadManager/soundLoader.ts');
 
 var advancePlaceHolder;
 var pauseOverlayAction;
